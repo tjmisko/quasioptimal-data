@@ -1,0 +1,16 @@
+description: 'Real covariates: GDP, capital stock, and patents (flow + stock) by country-year.'
+source: PWT 10.01 (rgdpna, rnna) + World Bank IP.PAT.RESD/NRES, via GitHub mirrors.
+rows: 1196
+columns:
+- entity
+- iso3
+- year
+- variable
+- value
+- unit
+- source_id
+- confidence
+- notes
+notes: gdp_real/capital_stock from PWT 1950-2019; patents from WB 1960-2013 (RESD+NRES,
+  office intake; applications not grants; post-1985 surge). Causal claims need a dense
+  engineer series overlapping these years (IPUMS, task G-US-01).

@@ -44,6 +44,12 @@ def main() -> int:
 
     print(f"Data provenance: {prov}")
     print(f"Series: {args.entity} ({args.definition}) engineers vs patents_flow")
+    if lead.get("insufficient"):
+        print(
+            f"INSUFFICIENT overlapping data (n={lead['n']}) — need a dense engineer series "
+            f"overlapping the patent years. INCONCLUSIVE. [{prov}]"
+        )
+        return 0
     print("lead-lag:", lead)
     print("granger:", granger)
     print("elasticity (patents wrt engineers):", elas)

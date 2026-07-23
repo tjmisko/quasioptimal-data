@@ -129,6 +129,20 @@ Pipeline entry points these tasks feed:
 - Download the JEEA 2022 replication package; use its c.1870–1914 engineer
   densities to **validate** our own reconstructed series (analysis cross-check).
 
+### G-MACRO-01 ✅ — GDP + physical capital stock  · **done via mirror**
+- **Source:** `pwt-1001` (Penn World Table 10.01). Real GDP (`rgdpna`) + capital
+  stock (`rnna`), 1950-2019, all target countries. Fetched; `prepare_covariates.py`
+  emits `gdp_real` + `capital_stock`. Feeds claims H2/H3.
+- **Extend ⛔:** pre-1950 (Jordà–Schularick–Taylor 1870+ GDP/investment mirror
+  exists — see `mirrors-macro-capital.md`; no capital *level* pre-1950).
+
+### G-PATENT-01 ✅ — patents / IP accumulation  · **done via mirror (1960+)**
+- **Sources:** `worldbank-patents-resd` + `worldbank-patents-nres` (WB IP.PAT.*,
+  1960-2013). `prepare_covariates.py` emits `patents_flow` (RESD+NRES) and a
+  cumulated `patents_stock`. Feeds the `patent-accumulation` claim.
+- **Extend ⛔:** pre-1960 / 19th-century US patents (HistPat 1836-1975, USPTO
+  h_counts 1790+) are on blocked hosts — needed for the long-run backbone.
+
 ---
 
 ## Track P — Prepare (raw → canonical processed tables)

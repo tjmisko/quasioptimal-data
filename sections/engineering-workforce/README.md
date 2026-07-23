@@ -43,6 +43,9 @@ empirical groundwork for claims about engineering capacity and development. See
 
 - [`PLAN.md`](PLAN.md) — the exploration and data-search plan, definitions, and
   the intended path from exploration to formal tests.
+- [`IDENTIFICATION.md`](IDENTIFICATION.md) — causal-inference strategy: controls,
+  cointegration/ECM vs Granger/lead-lag, IV, and natural experiments to find which
+  way causality runs (engineers ↔ GDP / capital / patents).
 - [`research/`](research/) — literature review and data-source scouting notes.
 - [`data_acquisition/`](data_acquisition/) — the data-gathering framework:
   `sources.yaml` (source registry), `TASKS.md` (handoff-ready Gather/Prepare/

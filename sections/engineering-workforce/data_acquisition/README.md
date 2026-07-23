@@ -22,6 +22,7 @@ fetch.py            # download reachable sources -> data/raw/ ; report blocked o
 prepare_population.py  # Maddison(+WB) -> processed/population_long.parquet
 prepare_engineers.py   # primary transforms (+ provisional seed) -> engineers_long.parquet
   --no-seed            #   primary sources only, exclude the provisional anchors
+prepare_covariates.py  # PWT (GDP+capital) + World Bank (patents) -> covariates_long.parquet
 build_panel.py         # join -> processed/panel.parquet (share_per_100k)
 schema.py / registry.py  # canonical schema + validators; sources.yaml loader
 synthetic.py           # dense SYNTHETIC panel (*_synth.parquet) for developing the stack
@@ -65,10 +66,16 @@ Confirmed mirrors were folded into `sources.yaml` (`reachable: here`).
 - **Numerators today** = one real point (US 2021, BLS) + the provisional seed, so
   the panel remains a **preliminary read, not a result.** Seed rows must be
   replaced by primary pulls before backing any claim.
+- **Real covariates are in** (for the causal claims): `pwt-1001` (real GDP +
+  capital stock 1950-2019) and `worldbank-patents-*` (patent applications
+  1960-2013) build a real `covariates_long.parquet`. The binding constraint on
+  running the GDP/capital/patent claims for real is now only a **dense engineer
+  series** overlapping those years (IPUMS, task G-US-01).
 - **Development stack is complete and swap-in ready** — see `../pipeline/`
-  (`synthetic.py`, `analysis.py`, `report.py`) and `../claims/`: the analysis,
-  figures, report, and first claim's formal test all run now on dense synthetic
-  data and switch to real data by changing the input path.
+  (`synthetic.py`, `analysis.py`, `report.py`), `../claims/`, and
+  `../IDENTIFICATION.md`: the analysis, figures, report, five claims' formal
+  tests, and the causal econometrics all run now on dense synthetic data (with
+  known ground truth) and switch to real data by changing the input path.
 
 ## Adding a source
 

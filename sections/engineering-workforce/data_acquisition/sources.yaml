@@ -137,6 +137,63 @@ sources:
       % tertiary attained/completed (lh/lhc), ~146 countries. Upper-tail
       human-capital covariate feeding the pre-1900 modern-standard counterfactual.
 
+  - id: pwt-1001
+    name: Penn World Table 10.01 (GDP + capital stock)
+    role: covariate
+    definition: n/a
+    geography: [United States, China, United Kingdom, Germany, France, many]
+    years: "1950 – 2019"
+    provider: Feenstra, Inklaar & Timmer (PWT 10.01); jivizcaino/PWT10.1 mirror
+    url: https://raw.githubusercontent.com/jivizcaino/PWT10.1/main/pwt101.csv
+    method: github_raw
+    reachable: here
+    raw: pwt101.csv
+    metric: n/a
+    priority: 1
+    task: G-MACRO-01
+    status: fetched
+    notes: >-
+      countrycode,country,year,rgdpna (real GDP),rnna (real net CAPITAL STOCK),
+      cn,emp,hc,... UTF-8 BOM (read encoding='utf-8-sig'). Feeds gdp_real +
+      capital_stock covariates for the H2/H3 claims. No World/California.
+
+  - id: worldbank-patents-resd
+    name: World Bank — patent applications, residents (IP.PAT.RESD)
+    role: covariate
+    definition: n/a
+    geography: [many]
+    years: "1960 – 2013 (this mirror)"
+    provider: World Bank WDI; ronnywang/worldbank mirror
+    url: https://raw.githubusercontent.com/ronnywang/worldbank/master/WDI_bundle/parsed/IP.PAT.RESD_WDI.csv
+    method: github_raw
+    reachable: here
+    raw: wb-patents-resd.csv
+    metric: annual_flow
+    priority: 2
+    task: G-PATENT-01
+    status: fetched
+    notes: >-
+      Wide: Country Name,Country Code,Indicator,<year cols>. Patent applications by
+      residents. Pair with NRES for total office intake. Applications not grants;
+      by office not inventor origin; post-1985 surge — normalize per engineer/capita.
+
+  - id: worldbank-patents-nres
+    name: World Bank — patent applications, non-residents (IP.PAT.NRES)
+    role: covariate
+    definition: n/a
+    geography: [many]
+    years: "1960 – 2013 (this mirror)"
+    provider: World Bank WDI; ronnywang/worldbank mirror
+    url: https://raw.githubusercontent.com/ronnywang/worldbank/master/WDI_bundle/parsed/IP.PAT.NRES_WDI.csv
+    method: github_raw
+    reachable: here
+    raw: wb-patents-nres.csv
+    metric: annual_flow
+    priority: 3
+    task: G-PATENT-01
+    status: fetched
+    notes: Non-resident patent applications; RESD+NRES = total office intake. Pre-1960 US needs HistPat (blocked).
+
   - id: maddison-2023
     name: Maddison Project Database 2023
     role: denominator

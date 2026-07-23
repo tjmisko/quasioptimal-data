@@ -42,18 +42,20 @@ def main() -> int:
 
     print(f"Data provenance: {prov}")
     print(f"Series: {args.entity} ({args.definition}) engineers vs {COVARIATE}")
+    if elas.get("insufficient"):
+        print(
+            f"INSUFFICIENT overlapping data (n={elas['n']}) — need a dense engineer series "
+            f"overlapping the covariate years. INCONCLUSIVE. [{prov}]"
+        )
+        return 0
     print("elasticity:", elas)
-    print("multiple regression (control for capital):", mreg)
+    print("multiple regression (control for gdp):", mreg)
     print("lead-lag:", lead)
 
-    supported = (
-        not elas.get("insufficient")
-        and elas["cointegrated"]
-        and elas["ci95"][0] > 0  # positive, significant elasticity
-    )
+    supported = elas["cointegrated"] and elas["ci95"][0] > 0  # positive, significant, long-run
     print(
         f"\nCLAIM {'SUPPORTED' if supported else 'NOT SUPPORTED'}  [{prov}]  "
-        f"(elasticity={elas.get('elasticity'):.3f}, cointegrated={elas.get('cointegrated')})"
+        f"(elasticity={elas['elasticity']:.3f}, cointegrated={elas['cointegrated']})"
     )
     return 0
 
