@@ -1,0 +1,55 @@
+# Section: Engineering Workforce
+
+**Question.** What is the long-run trend — going back to roughly **1500** — in the
+number of **formally trained engineers as a share of population**, both globally
+and for specific places (United States, and California in particular; China; the
+United Kingdom; Germany; and other comparators such as France)?
+
+We track the trend under **two definitions of "engineer"**:
+
+1. **Contemporary/period definition** — whoever counted as a formally trained or
+   professionally recognized engineer *at the time* (e.g. members of a corps of
+   military/civil engineers, licensed/chartered engineers, holders of an
+   engineering degree by the standards of the era).
+2. **Modern-standard definition** — people who would qualify as an engineer by
+   *today's* standards (roughly, a person with tertiary engineering training
+   working in an engineering role), applied as consistently as the historical
+   record allows.
+
+The two series should diverge sharply before ~1900: definition (1) captures a
+tiny, formally organized professional class, while definition (2) is largely a
+counterfactual/estimation exercise in eras before modern engineering education
+existed.
+
+## Why this matters
+
+The size of the engineering/technical workforce is a candidate driver of
+innovation and economic growth (the "upper-tail human capital" and
+"engineers vs. rent-seeking professions" literatures). Establishing the long-run
+levels and inflection points — and how they differ across countries — is the
+empirical groundwork for claims about engineering capacity and development. See
+`research/literature-review.md`.
+
+## Geographies in scope
+
+- **Global** (aggregate share of world population)
+- **United States** — national, plus **California** specifically
+- **China**
+- **United Kingdom**
+- **Germany**
+- **France** and other comparators as data allow
+
+## Structure
+
+- [`PLAN.md`](PLAN.md) — the exploration and data-search plan, definitions, and
+  the intended path from exploration to formal tests.
+- [`research/`](research/) — literature review and data-source scouting notes.
+- [`data/`](data/) — `raw/` source downloads (not committed) and `processed/`
+  analysis-ready tables.
+- [`claims/`](claims/) — claims formulated in this section (register in
+  `claims/README.md`).
+
+## Status
+
+**Exploring.** Literature review and an exhaustive data search are underway;
+no claims formulated yet.

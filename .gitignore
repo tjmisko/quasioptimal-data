@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+
+# uv
+# (uv.lock IS committed for reproducibility)
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# Jupyter
+*.ipynb_checkpoints
+
+# OS
+.DS_Store
+
+# Data policy:
+#   - raw/ holds large, immutable, as-downloaded source files -> not committed.
+#     Keep a data-sources manifest instead so downloads are reproducible.
+#   - processed/ holds small, analysis-ready tables -> committed (with .meta.yaml).
+sections/*/data/raw/*
+!sections/*/data/raw/.gitkeep
+!sections/*/data/raw/README.md
+
+# Common large/raw formats anywhere (safety net); override per-file with git add -f
+*.zip
+*.gz
+*.7z
+*.dta
+*.sav
