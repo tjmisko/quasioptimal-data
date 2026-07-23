@@ -44,12 +44,23 @@ empirical groundwork for claims about engineering capacity and development. See
 - [`PLAN.md`](PLAN.md) — the exploration and data-search plan, definitions, and
   the intended path from exploration to formal tests.
 - [`research/`](research/) — literature review and data-source scouting notes.
-- [`data/`](data/) — `raw/` source downloads (not committed) and `processed/`
-  analysis-ready tables.
+- [`data_acquisition/`](data_acquisition/) — the data-gathering framework:
+  `sources.yaml` (source registry), `TASKS.md` (handoff-ready Gather/Prepare/
+  Analyze cards), `SCHEMA.md` (canonical table shapes), and the provisional seed.
+- [`pipeline/`](pipeline/) — runnable ETL: `fetch` → `prepare_*` → `build_panel`,
+  plus the schema/validators and the `sources.yaml` loader.
+- [`data/`](data/) — `raw/` source downloads (not committed; manifest in
+  `raw/README.md`) and `processed/` analysis-ready tables (committed).
+- [`notebooks/`](notebooks/) — exploratory analysis (`00_explore_panel.py`).
 - [`claims/`](claims/) — claims formulated in this section (register in
-  `claims/README.md`).
+  `claims/README.md`; template in `claims/_TEMPLATE/`).
 
 ## Status
 
-**Exploring.** Literature review and an exhaustive data search are underway;
-no claims formulated yet.
+**Exploring.** Literature review and data search complete (see `research/`). The
+acquisition framework and a runnable pipeline are in place. The **population
+denominator is real** (Maddison 2020 + World Bank, the only egress-reachable
+data); **all numerator sources are currently egress-blocked** and captured as
+`G-*` tasks in `data_acquisition/TASKS.md`. The current panel is built from a
+small **provisional literature seed** — a methods demonstration and preliminary
+read, not a result. No claims formulated yet.

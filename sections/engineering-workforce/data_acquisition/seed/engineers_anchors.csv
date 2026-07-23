@@ -1,0 +1,9 @@
+entity,iso3,year,definition,metric,engineers,method,source_id,source_definition,confidence,notes
+United States,USA,1880,contemporary,stock,7000,census,edwards-1943,"US census occupation 'engineers' (civil/mining/mechanical)",literature_unverified,"[VERIFY] figure cited in research/literature-review.md; re-pull from Edwards 1943 / Blank-Stigler primary tables"
+United States,USA,1920,contemporary,stock,136000,census,edwards-1943,"US census occupation 'engineers'",literature_unverified,"[VERIFY] cited in research/literature-review.md; re-pull from primary tables"
+United States,USA,2022,modern,stock,1600000,census,bls-oews,"BLS OES employment, SOC 17-2xxx engineers",literature_unverified,"[VERIFY] order-of-magnitude ~1.6M; re-pull exact from BLS OEWS"
+United Kingdom,GBR,1830,contemporary,stock,220,membership,uk-institutions,"Institution of Civil Engineers members",literature_unverified,"[VERIFY] Grace's Guide via research notes; ICE only, undercounts the wider profession"
+United Kingdom,GBR,1886,contemporary,stock,5100,membership,uk-institutions,"Institution of Civil Engineers members",literature_unverified,"[VERIFY] research notes; ICE only"
+United Kingdom,GBR,2022,contemporary,stock,95000,membership,uk-institutions,"Institution of Civil Engineers members",literature_unverified,"[VERIFY] research notes; ICE only; broader EngC register is the row below"
+United Kingdom,GBR,2022,contemporary,stock,228000,licensure,uk-engineering-council,"Registered CEng/IEng/EngTech (Engineering Council)",literature_unverified,"[VERIFY] Engineering Council register; a broader contemporary proxy than ICE membership"
+Germany,DEU,2019,modern,stock,1900000,census,destatis-genesis,"Employed persons holding an engineering degree (Mikrozensus)",literature_unverified,"[VERIFY] cited in research/data-sources-uk-germany-europe.md; re-pull from Destatis"

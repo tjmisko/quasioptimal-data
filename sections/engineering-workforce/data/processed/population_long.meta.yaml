@@ -1,0 +1,17 @@
+description: "Long-run population (denominator) for World + target countries, 1500\u2013\
+  2018."
+source: Maddison Project Database 2020 (Bolt & van Zanden), via owid/owid-datasets
+  mirror
+rows: 1072
+columns:
+- entity
+- iso3
+- year
+- population
+- source_id
+- notes
+notes: Maddison population estimates. World total only from 1820 (use HYDE for earlier
+  world denominator, task G-POP-02). California not covered (task G-US-06). Pre-1820
+  country figures are sparse era estimates with wide uncertainty (e.g. US 1500/1700
+  reflect contested indigenous-population estimates).
+source_id: maddison-2020

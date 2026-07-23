@@ -1,0 +1,18 @@
+description: Engineer counts (numerator) by entity-year, definition, and metric.
+source: Mixed; see source_id per row and sources.yaml. Seed = literature anchors.
+rows: 8
+columns:
+- entity
+- iso3
+- year
+- definition
+- metric
+- engineers
+- method
+- source_id
+- source_definition
+- confidence
+- notes
+notes: "8 rows; 8 are provisional literature_unverified anchors ([VERIFY]) \u2014\
+  \ NOT primary data. Replace with primary pulls (G-* tasks) before using in any claim.\
+  \ All primary numerator sources are egress-blocked as of 2026-07-23."

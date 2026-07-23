@@ -1,0 +1,511 @@
+# Data source registry for the engineering-workforce section.
+#
+# Single source of truth for every dataset we want. The pipeline (fetch.py,
+# registry.py) reads this; the task cards in TASKS.md reference the `id`s.
+#
+# Fields per source:
+#   id             stable slug (used as source_id in processed tables)
+#   name           human name
+#   role           denominator | numerator_modern | numerator_historical | covariate
+#   definition     which engineer definition it feeds: contemporary | modern | both | n/a
+#   geography      list of entities it covers (or "many")
+#   years          approximate coverage
+#   provider       who publishes it
+#   url            landing page or direct link
+#   method         github_raw | http_api | portal | registration | offline_scan | book
+#   reachable      here | blocked_egress | unknown   (as probed 2026-07-23)
+#   raw            path under data/raw/ where the download lands (if applicable)
+#   metric         stock | annual_flow | population | n/a
+#   priority       1 (highest) .. 3
+#   task           task id in TASKS.md
+#   status         todo | fetched | processed | blocked
+#   notes          caveats / exact codes
+
+sources:
+
+  # ------------------------------------------------------------------ denominators
+  - id: maddison-2020
+    name: Maddison Project Database 2020 (via OWID mirror)
+    role: denominator
+    definition: n/a
+    geography: [World, United States, China, United Kingdom, Germany, France, many]
+    years: "1 AD – 2018 (World from 1820; countries at 1500/1600/1700/1820 then denser)"
+    provider: Bolt & van Zanden (2020); mirrored in owid/owid-datasets
+    url: https://raw.githubusercontent.com/owid/owid-datasets/master/datasets/Maddison%20Project%20Database%202020%20(Bolt%20and%20van%20Zanden%20(2020))/Maddison%20Project%20Database%202020%20(Bolt%20and%20van%20Zanden%20(2020)).csv
+    method: github_raw
+    reachable: here
+    raw: maddison-2020.csv
+    metric: population
+    priority: 1
+    task: G-POP-01
+    status: fetched
+    notes: >-
+      Columns Entity,Year,GDP per capita,Population,GDP. Primary long-run
+      denominator + GDP covariate. Pre-1820 world total absent (use HYDE).
+
+  - id: worldbank-population
+    name: World Bank total population (datahub mirror)
+    role: denominator
+    definition: n/a
+    geography: [many]
+    years: "1960 – present"
+    provider: World Bank WDI SP.POP.TOTL; mirrored in datasets/population
+    url: https://raw.githubusercontent.com/datasets/population/main/data/population.csv
+    method: github_raw
+    reachable: here
+    raw: worldbank-population.csv
+    metric: population
+    priority: 2
+    task: G-POP-01
+    status: fetched
+    notes: Modern cross-check for Maddison; Country Name,Country Code,Year,Value.
+
+  - id: maddison-2023
+    name: Maddison Project Database 2023
+    role: denominator
+    definition: n/a
+    geography: [World, many]
+    years: "1 AD – 2022"
+    provider: Bolt & van Zanden (2023), Univ. of Groningen GGDC
+    url: https://www.rug.nl/ggdc/historicaldevelopment/maddison/releases/maddison-project-database-2023
+    method: http_api
+    reachable: blocked_egress
+    raw: maddison-2023.xlsx
+    metric: population
+    priority: 2
+    task: G-POP-02
+    status: blocked
+    notes: Newer than 2020; rug.nl blocked by egress policy. Prefer once reachable.
+
+  - id: owid-hyde-population
+    name: Long-run population (HYDE + Gapminder + UN, via OWID)
+    role: denominator
+    definition: n/a
+    geography: [World, many]
+    years: "10000 BCE – 2100"
+    provider: Our World in Data (HYDE 3.3, Gapminder, UN WPP)
+    url: https://ourworldindata.org/population-growth
+    method: http_api
+    reachable: blocked_egress
+    raw: owid-population-longrun.csv
+    metric: population
+    priority: 1
+    task: G-POP-02
+    status: blocked
+    notes: Needed for pre-1820 WORLD denominator. ourworldindata.org egress-blocked.
+
+  - id: boe-millennium
+    name: A Millennium of Macroeconomic Data (UK)
+    role: denominator
+    definition: n/a
+    geography: [United Kingdom]
+    years: "1086 – 2016"
+    provider: Bank of England
+    url: https://www.bankofengland.co.uk/statistics/research-datasets
+    method: portal
+    reachable: blocked_egress
+    raw: boe-millennium.xlsx
+    metric: population
+    priority: 3
+    task: G-POP-02
+    status: blocked
+    notes: Best UK long-run population/GDP; bankofengland.co.uk egress-blocked.
+
+  # -------------------------------------------------------------- US numerators
+  - id: ipums-usa
+    name: IPUMS USA census microdata (occupation = engineer)
+    role: numerator_modern
+    definition: both
+    geography: [United States, California]
+    years: "1850 – present (decennial + ACS)"
+    provider: IPUMS, University of Minnesota
+    url: https://usa.ipums.org/usa/
+    method: registration
+    reachable: blocked_egress
+    raw: ipums-usa-extract.csv.gz
+    metric: stock
+    priority: 1
+    task: G-US-01
+    status: blocked
+    notes: >-
+      Build an extract with OCC1950 engineer codes (see task), STATEFIP=6 for CA,
+      weight by PERWT. Separates engine-DRIVERS from professional engineers. Free
+      account + extract builder; usa.ipums.org egress-blocked in this session.
+
+  - id: bls-oews
+    name: BLS Occupational Employment & Wage Statistics
+    role: numerator_modern
+    definition: modern
+    geography: [United States, California]
+    years: "1997 – present"
+    provider: US Bureau of Labor Statistics
+    url: https://www.bls.gov/oes/tables.htm
+    method: http_api
+    reachable: blocked_egress
+    raw: bls-oews-eng.csv
+    metric: stock
+    priority: 1
+    task: G-US-02
+    status: blocked
+    notes: SOC 17-2xxx (engineers). National + state (CA) + metro. bls.gov blocked.
+
+  - id: nces-ipeds
+    name: IPEDS Completions — engineering degrees (CIP 14)
+    role: numerator_modern
+    definition: modern
+    geography: [United States]
+    years: "1984 – present (earlier via Digest)"
+    provider: NCES
+    url: https://nces.ed.gov/ipeds/use-the-data
+    method: portal
+    reachable: blocked_egress
+    raw: ipeds-cip14.csv
+    metric: annual_flow
+    priority: 2
+    task: G-US-03
+    status: blocked
+    notes: Degrees conferred (flow). CIP 14 = Engineering. nces.ed.gov blocked.
+
+  - id: nsf-ncses
+    name: NSF NCSES Science & Engineering Indicators / degree series
+    role: numerator_modern
+    definition: modern
+    geography: [United States]
+    years: "1960s – present"
+    provider: National Center for Science and Engineering Statistics
+    url: https://ncses.nsf.gov/
+    method: portal
+    reachable: blocked_egress
+    raw: ncses-degrees.csv
+    metric: annual_flow
+    priority: 2
+    task: G-US-03
+    status: blocked
+    notes: Long engineering-degree series + engineer workforce stock. ncses.nsf.gov blocked.
+
+  - id: edwards-1943
+    name: Edwards, Comparative Occupation Statistics 1870–1940
+    role: numerator_historical
+    definition: contemporary
+    geography: [United States]
+    years: "1870 – 1940"
+    provider: US Census Bureau (Alba M. Edwards, 1943)
+    url: https://www.census.gov/library/publications/1943/dec/comparative-occupation-statistics.html
+    method: offline_scan
+    reachable: blocked_egress
+    raw: edwards-1943-engineers.csv
+    metric: stock
+    priority: 1
+    task: G-US-04
+    status: blocked
+    notes: Authoritative historical US engineer counts by decade. Digitize from PDF/scan.
+
+  - id: nber-blank-stigler
+    name: Blank & Stigler, The Demand and Supply of Scientific Personnel (App. B)
+    role: numerator_historical
+    definition: contemporary
+    geography: [United States]
+    years: "1890 – 1950"
+    provider: NBER (1957)
+    url: https://www.nber.org/books-and-chapters/demand-and-supply-scientific-personnel
+    method: offline_scan
+    reachable: blocked_egress
+    raw: blank-stigler-engineers.csv
+    metric: stock
+    priority: 2
+    task: G-US-04
+    status: blocked
+    notes: Engineers & chemists 1890–1950; splice with Edwards + NSF. nber.org blocked.
+
+  - id: ncees-pe
+    name: NCEES / CA BPELSG Professional Engineer licensure
+    role: numerator_modern
+    definition: contemporary
+    geography: [United States, California]
+    years: "20th c. – present"
+    provider: NCEES; California Board (BPELSG)
+    url: https://ncees.org/
+    method: portal
+    reachable: blocked_egress
+    raw: pe-licensure.csv
+    metric: stock
+    priority: 3
+    task: G-US-05
+    status: blocked
+    notes: Licensed PEs (a narrow contemporary definition; many engineers unlicensed).
+
+  # ------------------------------------------------------ international numerators
+  - id: unesco-uis
+    name: UNESCO UIS — tertiary graduates, engineering (ISCED-F 07)
+    role: numerator_modern
+    definition: modern
+    geography: [World, China, many]
+    years: "1998 – present"
+    provider: UNESCO Institute for Statistics
+    url: https://databrowser.uis.unesco.org/
+    method: http_api
+    reachable: blocked_egress
+    raw: uis-eng-graduates.csv
+    metric: annual_flow
+    priority: 1
+    task: G-INT-01
+    status: blocked
+    notes: Best harmonized global engineering-graduate flow. api.uis.unesco.org blocked.
+
+  - id: ilostat
+    name: ILOSTAT — employment by occupation (ISCO-08 214)
+    role: numerator_modern
+    definition: modern
+    geography: [World, many]
+    years: "1990s – present"
+    provider: International Labour Organization
+    url: https://ilostat.ilo.org/data/
+    method: http_api
+    reachable: blocked_egress
+    raw: ilostat-isco214.csv
+    metric: stock
+    priority: 1
+    task: G-INT-01
+    status: blocked
+    notes: ISCO-08 sub-major 214 = engineering professionals. Occupation stock, global.
+
+  - id: eurostat-lfsa-egai2d
+    name: Eurostat — employment, science & engineering professionals (ISCO OC21)
+    role: numerator_modern
+    definition: modern
+    geography: [United Kingdom, Germany, France, many]
+    years: "1998 – present"
+    provider: Eurostat
+    url: https://ec.europa.eu/eurostat/databrowser/product/view/lfsa_egai2d
+    method: http_api
+    reachable: blocked_egress
+    raw: eurostat-egai2d.csv
+    metric: stock
+    priority: 2
+    task: G-EU-01
+    status: blocked
+    notes: ISCO OC21 mixes scientists + engineers; note the over-count. ec.europa.eu blocked.
+
+  - id: eurostat-educ-grad02
+    name: Eurostat — tertiary graduates in engineering (ISCED-F 07)
+    role: numerator_modern
+    definition: modern
+    geography: [Germany, France, United Kingdom, many]
+    years: "1998 – present"
+    provider: Eurostat
+    url: https://ec.europa.eu/eurostat/databrowser/product/view/educ_uoe_grad02
+    method: http_api
+    reachable: blocked_egress
+    raw: eurostat-grad02.csv
+    metric: annual_flow
+    priority: 2
+    task: G-EU-01
+    status: blocked
+    notes: Engineering-graduate flow, harmonized EU. ec.europa.eu blocked.
+
+  - id: oecd-eag
+    name: OECD Education at a Glance — graduates by field
+    role: numerator_modern
+    definition: modern
+    geography: [many]
+    years: "2000s – present"
+    provider: OECD
+    url: https://data-explorer.oecd.org/
+    method: http_api
+    reachable: blocked_egress
+    raw: oecd-eag-eng.csv
+    metric: annual_flow
+    priority: 3
+    task: G-INT-01
+    status: blocked
+    notes: Cross-check for UIS/Eurostat graduate flows.
+
+  # ----------------------------------------------------------- China numerators
+  - id: china-moe
+    name: China Ministry of Education — graduates by field (工学 engineering)
+    role: numerator_modern
+    definition: modern
+    geography: [China]
+    years: "1998 – present (annual bulletins)"
+    provider: MOE / education statistical yearbooks
+    url: http://en.moe.gov.cn/documents/statistics/
+    method: portal
+    reachable: blocked_egress
+    raw: china-moe-eng-grad.csv
+    metric: annual_flow
+    priority: 1
+    task: G-CN-01
+    status: blocked
+    notes: 工学 (engineering) graduate counts. Definitional breadth issue (see notes).
+
+  - id: china-nbs
+    name: China NBS Statistical Yearbook — engineering/technical personnel
+    role: numerator_modern
+    definition: contemporary
+    geography: [China]
+    years: "1949 – present (sparser early)"
+    provider: National Bureau of Statistics of China
+    url: https://www.stats.gov.cn/english/
+    method: portal
+    reachable: blocked_egress
+    raw: china-nbs-eng-personnel.csv
+    metric: stock
+    priority: 1
+    task: G-CN-01
+    status: blocked
+    notes: 工程技术人员 (engineering-technical personnel) stock. stats.gov.cn blocked.
+
+  # --------------------------------------------------------- UK/DE/FR historical
+  - id: uk-icem
+    name: I-CeM — Integrated Census Microdata (UK 1851–1911)
+    role: numerator_historical
+    definition: both
+    geography: [United Kingdom]
+    years: "1851 – 1911 (1871 E&W missing)"
+    provider: UK Data Service (SN 7481)
+    url: https://www.essex.ac.uk/research-projects/integrated-census-microdata
+    method: registration
+    reachable: blocked_egress
+    raw: icem-occupations.csv
+    metric: stock
+    priority: 1
+    task: G-UK-01
+    status: blocked
+    notes: Coded occupations; disambiguate "engineer" vs "engine-driver" pre-1881.
+
+  - id: uk-nomis
+    name: Nomis (ONS) — engineering professionals (SOC 212)
+    role: numerator_modern
+    definition: modern
+    geography: [United Kingdom]
+    years: "2004 – present"
+    provider: ONS via Nomis
+    url: https://www.nomisweb.co.uk/
+    method: http_api
+    reachable: blocked_egress
+    raw: nomis-soc212.csv
+    metric: stock
+    priority: 2
+    task: G-UK-02
+    status: blocked
+    notes: SOC-2020 rebase breaks the series; free API once reachable.
+
+  - id: uk-engineering-council
+    name: Engineering Council — registered CEng/IEng/EngTech
+    role: numerator_modern
+    definition: contemporary
+    geography: [United Kingdom]
+    years: "1965 – present"
+    provider: Engineering Council UK
+    url: https://www.engc.org.uk/about-us/our-registers/registration-statistics/
+    method: portal
+    reachable: blocked_egress
+    raw: engc-register.csv
+    metric: stock
+    priority: 2
+    task: G-UK-02
+    status: blocked
+    notes: Chartered/registered stock; a narrow contemporary definition.
+
+  - id: uk-institutions
+    name: ICE / IMechE / IET membership series (Grace's Guide + archives)
+    role: numerator_historical
+    definition: contemporary
+    geography: [United Kingdom]
+    years: "1818 – present"
+    provider: Grace's Guide; institution archives
+    url: https://www.gracesguide.co.uk/Institution_of_Civil_Engineers
+    method: offline_scan
+    reachable: blocked_egress
+    raw: uk-institution-membership.csv
+    metric: stock
+    priority: 2
+    task: G-UK-03
+    status: blocked
+    notes: Splice ICE(1818)/IMechE(1847)/IEE(1871); avoid double-count; then to EngC.
+
+  - id: destatis-genesis
+    name: Destatis — engineering students/graduates & employed engineers
+    role: numerator_modern
+    definition: modern
+    geography: [Germany]
+    years: "1990s – present (Hochschulstatistik earlier)"
+    provider: Statistisches Bundesamt (GENESIS-Online)
+    url: https://www-genesis.destatis.de/
+    method: http_api
+    reachable: blocked_egress
+    raw: destatis-eng.csv
+    metric: annual_flow
+    priority: 2
+    task: G-DE-01
+    status: blocked
+    notes: Ingenieur title was unregulated pre-1970; use education/occupation not title.
+
+  - id: de-gispen-lundgreen
+    name: German TH enrollments/graduates (Gispen 1989; Lundgreen)
+    role: numerator_historical
+    definition: contemporary
+    geography: [Germany]
+    years: "1820s – 1939"
+    provider: Gispen, New Profession Old Order (CUP 1989); P. Lundgreen
+    url: https://www.cambridge.org/core/books/new-profession-old-order/
+    method: book
+    reachable: blocked_egress
+    raw: de-th-graduates.csv
+    metric: stock
+    priority: 2
+    task: G-DE-02
+    status: blocked
+    notes: Technische Hochschule enrollment/graduate tables; Statistik des Deutschen Reichs.
+
+  - id: fr-corps-ecoles
+    name: French corps & écoles registers (Ponts et Chaussées, Polytechnique)
+    role: numerator_historical
+    definition: contemporary
+    geography: [France]
+    years: "1716 – present"
+    provider: École des Ponts (1747), École Polytechnique (1794), CDEFI (modern)
+    url: https://www.polytechnique.edu/
+    method: offline_scan
+    reachable: blocked_egress
+    raw: fr-corps-registers.csv
+    metric: stock
+    priority: 2
+    task: G-FR-01
+    status: blocked
+    notes: Earliest formal engineer headcounts anywhere; tiny early cohorts (~120/yr X 1794).
+
+  - id: fox-guagnini-1993
+    name: Fox & Guagnini (eds.), Education, Technology & Industrial Performance
+    role: numerator_historical
+    definition: contemporary
+    geography: [Germany, France, United Kingdom, many]
+    years: "1850 – 1939"
+    provider: Cambridge University Press (1993)
+    url: https://www.cambridge.org/
+    method: book
+    reachable: blocked_egress
+    raw: fox-guagnini-graduates.csv
+    metric: annual_flow
+    priority: 2
+    task: G-EU-02
+    status: blocked
+    notes: Richest comparative national engineering-graduate tables for 1850–1939.
+
+  # ------------------------------------------------------------ covariate/anchor
+  - id: maloney-valencia
+    name: Maloney & Valencia Caicedo, "Engineering Growth" replication data
+    role: covariate
+    definition: contemporary
+    geography: [United States, many]
+    years: "c. 1870 – 1914"
+    provider: JEEA 2022 (replication package)
+    url: https://academic.oup.com/jeea
+    method: portal
+    reachable: blocked_egress
+    raw: maloney-valencia-densities.csv
+    metric: stock
+    priority: 2
+    task: G-ANCHOR-01
+    status: blocked
+    notes: Ready-made cross-country engineer-density panel to validate our own series against.

@@ -1,0 +1,3 @@
+source_id,url,raw_file,bytes,result
+maddison-2020,https://raw.githubusercontent.com/owid/owid-datasets/master/datasets/Maddison%20Project%20Database%202020%20(Bolt%20and%20van%20Zanden%20(2020))/Maddison%20Project%20Database%202020%20(Bolt%20and%20van%20Zanden%20(2020)).csv,maddison-2020.csv,809942,ok 809942 bytes sha256=23a67c11f701
+worldbank-population,https://raw.githubusercontent.com/datasets/population/main/data/population.csv,worldbank-population.csv,552112,ok 552112 bytes sha256=7d2dd6a17f5e

@@ -1,0 +1,19 @@
+description: 'Analysis panel: engineers, population, and share_per_100k by entity/year/definition.'
+source: Join of engineers_long (numerator) and population_long (denominator).
+rows: 8
+columns:
+- entity
+- iso3
+- year
+- definition
+- engineers
+- population
+- share_per_100k
+- metric
+- method
+- source_id
+- confidence
+- notes
+notes: share_per_100k = 1e5 * engineers / population, stock rows only. Rows inherit
+  the numerator's `confidence`; provisional literature_unverified rows must not back
+  a claim until replaced by primary data.
