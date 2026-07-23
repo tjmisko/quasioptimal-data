@@ -122,7 +122,44 @@ Once data are in hand:
 - Exploratory notebooks with the assembled long-run series.
 - One or more formulated, tested claims in `claims/`.
 
-## 8. Open decisions
+## 8. Priority data acquisitions (from the research fan-out)
+
+Ranked, concrete next pulls identified in `research/`. Record each in the raw
+manifest (`data/raw/README.md`) as it is downloaded.
+
+**Denominators (do first — everything is a share):**
+- Our World in Data population (HYDE 10,000 BCE–1799 + Gapminder 1800–1949 + UN
+  WPP 1950+); Maddison Project Database 2023 as cross-check + GDP covariate.
+- Country long-run: Bank of England "A Millennium of Macroeconomic Data" (UK);
+  US Census + California Dept. of Finance series; national offices for DE/FR.
+
+**Numerators — modern, harmonized (highest ROI):**
+- IPUMS USA microdata — engineers back to 1850 via `OCC1950`, California via
+  `STATEFIP`=06, weighted by `PERWT` (separates engine-*operators* from degreed).
+- BLS OEWS (SOC 17-2xxx) national + California/metros, 1997+.
+- NCES IPEDS Completions (CIP 14) and NSF NCSES (degree history + engineer *stock*).
+- Eurostat `lfsa_egai2d` (ISCO OC21) + `educ_uoe_grad02` (ISCED-F 07) for UK/DE/FR/EU.
+- UNESCO UIS (ISCED-F 07 graduates) + ILOSTAT (ISCO-08 214) for the global + China series.
+- China: MoE bulletins (工学) and NBS yearbook (工程技术人员); triangulate MoE ↔ UIS ↔ CSET.
+
+**Numerators — historical / period-contemporary anchors:**
+- UK: I-CeM census microdata (SN 7481, 1851–1911); ICE/IMechE membership series
+  (Grace's Guide + archives); Engineering Council register back-series.
+- US: Edwards *Comparative Occupation Statistics 1870–1940*; NBER Blank–Stigler
+  engineers/chemists 1890–1950; splice to NSF S&E Indicators (1960+).
+- Europe: Fox & Guagnini (eds.) 1993 comparative graduate tables; Gispen &
+  Lundgreen for German TH enrollments; ponts/Polytechnique registers (FR).
+- Replication data: Maloney & Valencia Caicedo "Engineering Growth" engineer
+  densities c.1870–1914 — a ready-made cross-country panel to anchor against.
+
+**Known environment constraint.** The research agents hit HTTP 403 from the
+egress proxy on many primary hosts (bls.gov, ipums.org, stats.gov.cn,
+uis.unesco.org, eurostat, engc.org.uk, nber.org, etc.). Before bulk downloads,
+check `/root/.ccr/README.md` and `curl -sS "$HTTPS_PROXY/__agentproxy/status"`
+for per-host fixes. All `[VERIFY]`-flagged figures in the research notes must be
+re-pulled from primary sources before being cited in a claim.
+
+## 9. Open decisions
 
 - How aggressively to attempt the pre-1900 **modern-standard** counterfactual vs.
   presenting it only as bounded scenarios. *(Lean: scenarios with explicit
