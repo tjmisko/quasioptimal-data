@@ -13,4 +13,4 @@ columns:
 - source_definition
 - confidence
 - notes
-notes: NOT REAL DATA. confidence=synthetic. Ground-truth breaks in breaks sidecar.
+notes: NOT REAL DATA. confidence=synthetic. Ground-truth in the sidecar.

@@ -86,6 +86,27 @@ PANEL_COLUMNS = [
     "notes",
 ]
 
+# Covariates for the causal story: relate the engineer stock to macro quantities.
+COVARIATE_VARIABLES = (
+    "gdp_real",  # real GDP (constant int$)
+    "capital_stock",  # real net capital stock / plant (constant int$)
+    "investment",  # gross fixed capital formation (constant int$/yr)
+    "patents_flow",  # patent applications or grants per year
+    "patents_stock",  # accumulated (depreciated) patent stock
+)
+
+COVARIATES_COLUMNS = [
+    "entity",
+    "iso3",
+    "year",
+    "variable",  # one of COVARIATE_VARIABLES
+    "value",
+    "unit",
+    "source_id",
+    "confidence",
+    "notes",
+]
+
 
 class SchemaError(ValueError):
     """Raised when a dataframe does not satisfy a canonical schema."""
@@ -122,6 +143,17 @@ def validate_engineers(df: pd.DataFrame) -> pd.DataFrame:
     if bad_method:
         raise SchemaError(f"engineers_long: bad method {bad_method}; allowed {METHODS}")
     return out[ENGINEERS_COLUMNS]
+
+
+def validate_covariates(df: pd.DataFrame) -> pd.DataFrame:
+    _require_columns(df, COVARIATES_COLUMNS, "covariates_long")
+    out = df.copy()
+    out["year"] = out["year"].astype(int)
+    out["value"] = out["value"].astype(float)
+    bad = set(out["variable"]) - set(COVARIATE_VARIABLES)
+    if bad:
+        raise SchemaError(f"covariates_long: bad variable {bad}; allowed {COVARIATE_VARIABLES}")
+    return out[COVARIATES_COLUMNS]
 
 
 def build_panel(engineers: pd.DataFrame, population: pd.DataFrame) -> pd.DataFrame:

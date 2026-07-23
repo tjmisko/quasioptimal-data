@@ -3,9 +3,19 @@
 Claims formulated in this section. Each row links to a claim directory
 containing the precise statement, null hypothesis, test, and conclusion.
 
+All tests below are **wired and validated on synthetic data** (swap-in ready);
+verdicts await real numerator/covariate data. See `../IDENTIFICATION.md` for the
+causal strategy that turns these associations into directional claims.
+
 | Claim | Status | Statement (short) | Test |
 | --- | --- | --- | --- |
-| _(none yet)_ | — | Claims will be added after exploratory analysis. | — |
+| [`engineer-share-takeoff`](engineer-share-takeoff/) | Proposed | Engineer share ~flat pre-industrial, then structural-break takeoff. | changepoint (BIC) + growth regimes |
+| [`exponential-growth-since-1800`](exponential-growth-since-1800/) | Proposed | Engineer **count** grew quasi-exponentially since ~1800. | log-linear fit + curvature (H1) |
+| [`engineers-track-gdp`](engineers-track-gdp/) | Proposed | Engineers cointegrated with real GDP, positive elasticity. | elasticity + Engle–Granger (H2) |
+| [`engineers-track-capital`](engineers-track-capital/) | Proposed | Engineers cointegrated with physical capital stock. | elasticity + Engle–Granger (H3) |
+| [`patent-accumulation`](patent-accumulation/) | Proposed | Engineers **lead** patent/IP accumulation (directional). | lead-lag + Granger |
+
+_`_TEMPLATE/` is the blank claim skeleton; `_common.py` is shared test-loading._
 
 ## How to add a claim
 

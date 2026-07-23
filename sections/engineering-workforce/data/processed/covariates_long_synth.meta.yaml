@@ -1,0 +1,16 @@
+description: SYNTHETIC GDP, capital stock, investment, and patents (flow+stock).
+source: SYNTHETIC generative model (pipeline/synthetic.py)
+rows: 18410
+columns:
+- entity
+- iso3
+- year
+- variable
+- value
+- unit
+- source_id
+- confidence
+- notes
+notes: NOT REAL DATA. Generated FROM the engineer stock with known elasticities and
+  an engineers->patents lag so causal/cointegration tests have ground truth. Mirrors
+  the real covariates being sourced (Maddison/PWT GDP+capital, OWID/WIPO patents).

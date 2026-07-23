@@ -107,10 +107,70 @@ def _regime_share(cfg: EntityConfig, ceiling: float, modern: bool, rng) -> np.nd
     return np.exp(log_share + noise)
 
 
-def build() -> tuple[pd.DataFrame, pd.DataFrame, dict]:
+# --- ground-truth causal parameters (what the econometrics should recover) ---
+GT = {
+    "gdp_elasticity_wrt_engineers": 0.85,  # d log GDP / d log E
+    "capital_elasticity_wrt_engineers": 1.05,  # d log K / d log E
+    "patent_elasticity_wrt_engineers": 1.10,  # d log patents / d log E
+    "patent_lag_years": 12,  # engineers LEAD patents -> Granger E -> patents
+    "patent_depreciation": 0.04,  # perpetual-inventory decay for patent stock
+    "causal_direction": "engineers -> {gdp, capital, patents}; patents do NOT cause engineers",
+}
+_SCALES = {"gdp_real": 5e6, "capital_stock": 1.6e7, "patents_flow": 0.075}
+
+
+def _covariates_for(cfg: EntityConfig, engineers: np.ndarray, rng) -> list[dict]:
+    """GDP, capital, and patents generated FROM the engineer stock with the GT
+    elasticities and an engineers->patents lag, so causal tests have ground truth."""
+    logE = np.log(np.clip(engineers, 1e-6, None))
+    gdp = _SCALES["gdp_real"] * np.exp(
+        GT["gdp_elasticity_wrt_engineers"] * logE + rng.normal(0, 0.05, len(logE))
+    )
+    capital = _SCALES["capital_stock"] * np.exp(
+        GT["capital_elasticity_wrt_engineers"] * logE + rng.normal(0, 0.05, len(logE))
+    )
+    lag = GT["patent_lag_years"]
+    logE_lag = np.concatenate([np.full(lag, logE[0]), logE[:-lag]])
+    patents_flow = _SCALES["patents_flow"] * np.exp(
+        GT["patent_elasticity_wrt_engineers"] * logE_lag + rng.normal(0, 0.08, len(logE))
+    )
+    delta = GT["patent_depreciation"]
+    patents_stock = np.empty_like(patents_flow)
+    patents_stock[0] = patents_flow[0]
+    for i in range(1, len(patents_flow)):
+        patents_stock[i] = (1 - delta) * patents_stock[i - 1] + patents_flow[i]
+    investment = np.clip(np.gradient(capital) + 0.05 * capital, 1.0, None)
+
+    variables = {
+        "gdp_real": (gdp, "constant int$ (synthetic)"),
+        "capital_stock": (capital, "constant int$ (synthetic)"),
+        "investment": (investment, "constant int$/yr (synthetic)"),
+        "patents_flow": (patents_flow, "count/yr (synthetic)"),
+        "patents_stock": (patents_stock, "count (synthetic)"),
+    }
+    rows = []
+    for var, (arr, unit) in variables.items():
+        for y, v in zip(YEARS, arr, strict=True):
+            rows.append(
+                {
+                    "entity": cfg.entity,
+                    "iso3": cfg.iso3,
+                    "year": int(y),
+                    "variable": var,
+                    "value": float(v),
+                    "unit": unit,
+                    "source_id": "synthetic",
+                    "confidence": "synthetic",
+                    "notes": "SYNTHETIC — not real data",
+                }
+            )
+    return rows
+
+
+def build() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
     rng = np.random.default_rng(SEED)
-    pop_rows, eng_rows = [], []
-    ground_truth_breaks: dict[str, dict[str, list[int]]] = {}
+    pop_rows, eng_rows, cov_rows = [], [], []
+    ground_truth: dict = {"breaks": {}, "causal": GT}
 
     for cfg in CONFIGS:
         pop = _logistic_population(cfg)
@@ -125,13 +185,16 @@ def build() -> tuple[pd.DataFrame, pd.DataFrame, dict]:
                     "notes": "SYNTHETIC",
                 }
             )
-        ground_truth_breaks[cfg.entity] = {}
+        ground_truth["breaks"][cfg.entity] = {}
+        contemporary_engineers = None
         for definition, ceiling, modern in (
             ("contemporary", cfg.ceiling_contemporary, False),
             ("modern", cfg.ceiling_modern, True),
         ):
             share = _regime_share(cfg, ceiling, modern, rng)
             engineers = share / 1e5 * pop
+            if definition == "contemporary":
+                contemporary_engineers = engineers
             for y, e in zip(YEARS, engineers, strict=True):
                 eng_rows.append(
                     {
@@ -149,15 +212,18 @@ def build() -> tuple[pd.DataFrame, pd.DataFrame, dict]:
                     }
                 )
             takeoff = cfg.takeoff - (25 if definition == "modern" else 0)
-            ground_truth_breaks[cfg.entity][definition] = [int(takeoff), int(cfg.break2)]
+            ground_truth["breaks"][cfg.entity][definition] = [int(takeoff), int(cfg.break2)]
+
+        cov_rows.extend(_covariates_for(cfg, contemporary_engineers, rng))
 
     pop_df = schema.validate_population(pd.DataFrame(pop_rows))
     eng_df = schema.validate_engineers(pd.DataFrame(eng_rows))
-    return pop_df, eng_df, ground_truth_breaks
+    cov_df = schema.validate_covariates(pd.DataFrame(cov_rows))
+    return pop_df, eng_df, cov_df, ground_truth
 
 
 def main() -> int:
-    pop_df, eng_df, breaks = build()
+    pop_df, eng_df, cov_df, ground_truth = build()
     pdir = processed_dir("engineering-workforce")
 
     save_processed(
@@ -172,7 +238,18 @@ def main() -> int:
         pdir / "engineers_long_synth.parquet",
         source="SYNTHETIC generative model (pipeline/synthetic.py)",
         description="SYNTHETIC dense engineer counts, both definitions, 1500-2025.",
-        notes="NOT REAL DATA. confidence=synthetic. Ground-truth breaks in breaks sidecar.",
+        notes="NOT REAL DATA. confidence=synthetic. Ground-truth in the sidecar.",
+    )
+    save_processed(
+        cov_df,
+        pdir / "covariates_long_synth.parquet",
+        source="SYNTHETIC generative model (pipeline/synthetic.py)",
+        description="SYNTHETIC GDP, capital stock, investment, and patents (flow+stock).",
+        notes=(
+            "NOT REAL DATA. Generated FROM the engineer stock with known elasticities and an "
+            "engineers->patents lag so causal/cointegration tests have ground truth. Mirrors the "
+            "real covariates being sourced (Maddison/PWT GDP+capital, OWID/WIPO patents)."
+        ),
     )
     panel = schema.build_panel(eng_df, pop_df)
     save_processed(
@@ -182,15 +259,11 @@ def main() -> int:
         description="SYNTHETIC analysis panel (share_per_100k) for developing the stack.",
         notes="NOT REAL DATA. Use to build/validate analysis + report; swap in real panel later.",
     )
-    (pdir / "panel_synth.breaks.json").write_text(json.dumps(breaks, indent=2))
+    (pdir / "panel_synth.breaks.json").write_text(json.dumps(ground_truth, indent=2))
 
-    print(f"Wrote SYNTHETIC panel: {len(panel)} rows, entities={sorted(panel['entity'].unique())}")
-    print(f"Ground-truth breaks -> {pdir / 'panel_synth.breaks.json'}")
-    print(
-        panel.query("entity == 'United States' and definition == 'contemporary'")
-        .iloc[::80][["year", "engineers", "population", "share_per_100k"]]
-        .to_string(index=False)
-    )
+    print(f"Wrote SYNTHETIC panel ({len(panel)} rows) + covariates ({len(cov_df)} rows).")
+    print(f"Ground-truth (breaks + causal params) -> {pdir / 'panel_synth.breaks.json'}")
+    print(f"Covariate variables: {sorted(cov_df['variable'].unique())}")
     return 0
 
 

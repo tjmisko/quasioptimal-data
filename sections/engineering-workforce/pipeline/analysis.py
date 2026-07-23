@@ -25,6 +25,8 @@ from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
+import statsmodels.api as sm
+from statsmodels.tsa.stattools import adfuller, grangercausalitytests
 
 
 # --------------------------------------------------------------------------- #
@@ -215,6 +217,176 @@ def cross_country_snapshot(
     if not rows:
         return pd.DataFrame(columns=cols)
     return pd.DataFrame(rows).sort_values("share_per_100k", ascending=False).reset_index(drop=True)
+
+
+# --------------------------------------------------------------------------- #
+# engineers vs covariates: merge helper
+# --------------------------------------------------------------------------- #
+def entity_frame(
+    panel: pd.DataFrame,
+    covariates: pd.DataFrame,
+    entity: str,
+    definition: str = "contemporary",
+) -> pd.DataFrame:
+    """Wide per-entity time series: engineers + population + each covariate by year."""
+    e = panel[(panel["entity"] == entity) & (panel["definition"] == definition)]
+    e = e[["year", "engineers", "population", "share_per_100k"]].dropna(subset=["engineers"])
+    wide = covariates[covariates["entity"] == entity].pivot_table(
+        index="year", columns="variable", values="value", aggfunc="first"
+    )
+    out = e.merge(wide, on="year", how="inner").sort_values("year").reset_index(drop=True)
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# H1: quasi-exponential growth
+# --------------------------------------------------------------------------- #
+def test_exponential_growth(df: pd.DataFrame, value_col: str, since: int = 1800) -> dict:
+    """Is `value_col` growing quasi-exponentially since `since`?
+
+    Fits log(value) ~ year (exponential) and log(value) ~ year + year^2. Exponential
+    growth => high R^2 of the linear-in-log fit and an insignificant quadratic term
+    (constant growth rate). Returns the implied annual growth (CAGR), R^2, and the
+    quadratic-term p-value (curvature test).
+    """
+    d = df[df["year"] >= since].dropna(subset=[value_col])
+    d = d[d[value_col] > 0]
+    if len(d) < 6:
+        return {"n": len(d), "insufficient": True}
+    x = d["year"].to_numpy(float)
+    y = np.log(d[value_col].to_numpy(float))
+    xc = x - x.mean()
+    lin = sm.OLS(y, sm.add_constant(xc)).fit()
+    quad = sm.OLS(y, sm.add_constant(np.column_stack([xc, xc**2]))).fit()
+    return {
+        "n": int(len(d)),
+        "since": int(since),
+        "annual_growth": float(np.exp(lin.params[1]) - 1),
+        "r2_loglinear": float(lin.rsquared),
+        "quad_term_pvalue": float(quad.pvalues[2]),
+        "constant_growth": bool(quad.pvalues[2] > 0.05),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# H2/H3: elasticity + cointegration (does E track GDP / capital?)
+# --------------------------------------------------------------------------- #
+def elasticity(df: pd.DataFrame, y_col: str, x_col: str) -> dict:
+    """Log-log OLS elasticity d log(y)/d log(x), with an Engle-Granger cointegration
+    check (ADF on the regression residuals) to guard against spurious level regression."""
+    d = df.dropna(subset=[y_col, x_col])
+    d = d[(d[y_col] > 0) & (d[x_col] > 0)]
+    if len(d) < 12:
+        return {"n": len(d), "insufficient": True}
+    ly = np.log(d[y_col].to_numpy(float))
+    lx = np.log(d[x_col].to_numpy(float))
+    fit = sm.OLS(ly, sm.add_constant(lx)).fit()
+    resid = ly - fit.predict(sm.add_constant(lx))
+    adf_p = float(adfuller(resid, autolag="AIC")[1])
+    ci = fit.conf_int()[1]
+    return {
+        "n": int(len(d)),
+        "elasticity": float(fit.params[1]),
+        "se": float(fit.bse[1]),
+        "ci95": [float(ci[0]), float(ci[1])],
+        "r2": float(fit.rsquared),
+        "coint_adf_pvalue": adf_p,
+        "cointegrated": bool(adf_p < 0.05),
+    }
+
+
+def multiple_regression(df: pd.DataFrame, y_col: str, x_cols: list[str]) -> dict:
+    """Log-log multiple regression: partial elasticities of y wrt each x (controls)."""
+    cols = [y_col, *x_cols]
+    d = df.dropna(subset=cols)
+    for c in cols:
+        d = d[d[c] > 0]
+    if len(d) < 12:
+        return {"n": len(d), "insufficient": True}
+    y = np.log(d[y_col].to_numpy(float))
+    X = np.column_stack([np.log(d[c].to_numpy(float)) for c in x_cols])
+    fit = sm.OLS(y, sm.add_constant(X)).fit()
+    return {
+        "n": int(len(d)),
+        "params": dict(zip(["const", *x_cols], map(float, fit.params), strict=True)),
+        "pvalues": dict(zip(["const", *x_cols], map(float, fit.pvalues), strict=True)),
+        "r2": float(fit.rsquared),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# causality direction (Granger, on stationary differenced logs)
+# --------------------------------------------------------------------------- #
+def granger_direction(df: pd.DataFrame, a_col: str, b_col: str, maxlag: int = 6) -> dict:
+    """Test Granger-causality both ways between a and b (log, differenced to
+    stationarity). Returns the best (smallest) p-value in each direction and the
+    inferred lead. Small p for a->b means past a helps predict b."""
+    d = df.dropna(subset=[a_col, b_col])
+    d = d[(d[a_col] > 0) & (d[b_col] > 0)]
+    if len(d) < maxlag * 3 + 5:
+        return {"n": len(d), "insufficient": True}
+    la = np.diff(np.log(d[a_col].to_numpy(float)))
+    lb = np.diff(np.log(d[b_col].to_numpy(float)))
+
+    def _best_p(cause: np.ndarray, effect: np.ndarray) -> float:
+        data = np.column_stack([effect, cause])  # tests whether col2 causes col1
+        res = grangercausalitytests(data, maxlag=maxlag, verbose=False)
+        return min(res[lag][0]["ssr_ftest"][1] for lag in res)
+
+    p_a_to_b = _best_p(la, lb)
+    p_b_to_a = _best_p(lb, la)
+    direction = (
+        f"{a_col} -> {b_col}"
+        if p_a_to_b < 0.05 <= p_b_to_a
+        else f"{b_col} -> {a_col}"
+        if p_b_to_a < 0.05 <= p_a_to_b
+        else "bidirectional"
+        if p_a_to_b < 0.05 and p_b_to_a < 0.05
+        else "inconclusive"
+    )
+    return {
+        "n": int(len(d)),
+        f"p_{a_col}_causes_{b_col}": p_a_to_b,
+        f"p_{b_col}_causes_{a_col}": p_b_to_a,
+        "direction": direction,
+    }
+
+
+def lead_lag(df: pd.DataFrame, a_col: str, b_col: str, max_lag: int = 40) -> dict:
+    """Cross-correlate growth rates to find the lag at peak correlation.
+
+    Returns ``best_lag`` where a positive value means `a_col` LEADS `b_col` by that
+    many years (past a predicts b) — a robust direction diagnostic for smooth,
+    co-trending series where Granger tests are ambiguous.
+    """
+    d = df.dropna(subset=[a_col, b_col])
+    d = d[(d[a_col] > 0) & (d[b_col] > 0)].sort_values("year")
+    if len(d) < max_lag + 10:
+        return {"n": len(d), "insufficient": True}
+    ga = np.diff(np.log(d[a_col].to_numpy(float)))
+    gb = np.diff(np.log(d[b_col].to_numpy(float)))
+    ga = (ga - ga.mean()) / (ga.std() + 1e-12)
+    gb = (gb - gb.mean()) / (gb.std() + 1e-12)
+    best_lag, best_corr = 0, -np.inf
+    for k in range(-max_lag, max_lag + 1):
+        if k >= 0:
+            x, y = ga[: len(ga) - k], gb[k:]
+        else:
+            x, y = ga[-k:], gb[: len(gb) + k]
+        if len(x) < 10:
+            continue
+        corr = float(np.corrcoef(x, y)[0, 1])
+        if corr > best_corr:
+            best_corr, best_lag = corr, k
+    leader = a_col if best_lag > 0 else b_col if best_lag < 0 else "contemporaneous"
+    return {
+        "n": int(len(d)),
+        "best_lag": best_lag,
+        "peak_corr": best_corr,
+        "interpretation": f"{leader} leads by {abs(best_lag)} yr"
+        if best_lag
+        else "contemporaneous",
+    }
 
 
 # --------------------------------------------------------------------------- #

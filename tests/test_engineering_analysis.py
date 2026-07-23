@@ -70,3 +70,36 @@ def test_cross_country_snapshot_picks_nearest_year_and_sorts():
 def test_counterfactual_band_is_monotone():
     band = analysis.counterfactual_modern_share(0.05, {"low": 0.002, "central": 0.01, "high": 0.03})
     assert band["low"] < band["central"] < band["high"]
+
+
+def _covariate_frame(g_eng=0.05, gdp_elasticity=0.85, patent_lag=10):
+    """engineers grow exponentially; gdp = f(engineers^elasticity); patents lag engineers."""
+    years = np.arange(1800, 2021)
+    engineers = np.exp(g_eng * (years - 1800)) * 100
+    gdp = 5e6 * engineers**gdp_elasticity
+    patents = np.empty_like(engineers)
+    patents[:patent_lag] = engineers[0]
+    patents[patent_lag:] = engineers[:-patent_lag]
+    return pd.DataFrame(
+        {"year": years, "engineers": engineers, "gdp_real": gdp, "patents_flow": patents}
+    )
+
+
+def test_exponential_growth_recovers_rate():
+    df = _covariate_frame(g_eng=0.05)
+    res = analysis.test_exponential_growth(df, "engineers", since=1800)
+    assert res["r2_loglinear"] > 0.999
+    assert abs(res["annual_growth"] - 0.05) < 0.002
+    assert res["constant_growth"] is True
+
+
+def test_elasticity_recovers_known_value():
+    df = _covariate_frame(gdp_elasticity=0.85)
+    res = analysis.elasticity(df, "gdp_real", "engineers")
+    assert abs(res["elasticity"] - 0.85) < 0.02
+
+
+def test_lead_lag_recovers_direction_and_lag():
+    df = _covariate_frame(patent_lag=10)
+    res = analysis.lead_lag(df, "engineers", "patents_flow", max_lag=30)
+    assert res["best_lag"] == 10  # engineers lead patents by the injected lag
