@@ -68,11 +68,37 @@ def prepare_ipums_usa() -> pd.DataFrame:
 
 
 def prepare_bls_oews() -> pd.DataFrame:
-    """BLS OEWS -> US & California modern engineer STOCK (SOC 17-2xxx), 1997+."""
+    """BLS OEWS mirror -> US modern engineer STOCK (SOC 17-2000), May 2021.
+
+    Currently the mirror is a single national-year file; when the full
+    year-by-state OEWS series is obtained (task G-US-02), extend this to emit all
+    years and California (AREA_TITLE == 'California').
+    """
     src = registry.get_source("bls-oews")
     if src.raw_file is None or not src.raw_file.exists():
         raise SourceNotAvailable(f"{src.id}: {src.raw_file} not present ({src.task})")
-    raise NotImplementedError("Implement once BLS OEWS files are available (task G-US-02).")
+    b = pd.read_csv(src.raw_file, dtype=str)
+    row = b[(b["OCC_CODE"] == "17-2000") & (b["AREA_TITLE"].str.contains("U.S.", na=False))]
+    if row.empty:
+        row = b[b["OCC_CODE"] == "17-2000"]
+    emp = float(row.iloc[0]["TOT_EMP"].replace(",", ""))
+    return pd.DataFrame(
+        [
+            {
+                "entity": "United States",
+                "iso3": "USA",
+                "year": 2021,
+                "definition": "modern",
+                "metric": "stock",
+                "engineers": emp,
+                "method": "census",
+                "source_id": "bls-oews",
+                "source_definition": "BLS OEWS SOC 17-2000 'Engineers', national employment",
+                "confidence": "primary",
+                "notes": "Mirror of BLS OEWS national May-2021 (single year).",
+            }
+        ]
+    )
 
 
 PRIMARY_TRANSFORMS = {

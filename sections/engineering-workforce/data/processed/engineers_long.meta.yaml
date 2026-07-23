@@ -13,6 +13,6 @@ columns:
 - source_definition
 - confidence
 - notes
-notes: "8 rows; 8 are provisional literature_unverified anchors ([VERIFY]) \u2014\
+notes: "8 rows; 7 are provisional literature_unverified anchors ([VERIFY]) \u2014\
   \ NOT primary data. Replace with primary pulls (G-* tasks) before using in any claim.\
   \ All primary numerator sources are egress-blocked as of 2026-07-23."

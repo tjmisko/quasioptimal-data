@@ -1,0 +1,11 @@
+description: SYNTHETIC dense population denominator for developing analysis/outputs.
+source: SYNTHETIC generative model (pipeline/synthetic.py)
+rows: 3682
+columns:
+- entity
+- iso3
+- year
+- population
+- source_id
+- notes
+notes: NOT REAL DATA. Quarantined; swap for real population_long when available.

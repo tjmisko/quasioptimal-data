@@ -60,6 +60,83 @@ sources:
     status: fetched
     notes: Modern cross-check for Maddison; Country Name,Country Code,Year,Value.
 
+  # --- mirrors confirmed by the GitHub-mirror hunt (2026-07-23) ---
+  - id: owid-co2-population
+    name: OWID long-run population + Maddison 2023 GDP (via owid/co2-data)
+    role: denominator
+    definition: n/a
+    geography: [World, United States, China, United Kingdom, Germany, France, many]
+    years: "1750 – 2024 (annual)"
+    provider: Our World in Data (HYDE+Gapminder+UN pop; Maddison 2023 gdp)
+    url: https://raw.githubusercontent.com/owid/co2-data/master/owid-co2-data.csv
+    method: github_raw
+    reachable: here
+    raw: owid-co2-data.csv
+    metric: population
+    priority: 1
+    task: G-POP-01
+    status: fetched
+    notes: >-
+      country,year,iso_code,population,gdp,... Annual pop for World+countries
+      1750+, plus Maddison-2023 GDP. ~14 MB. Primary MODERN annual denominator.
+
+  - id: world-historical-population
+    name: World population, deep history (multiple estimates)
+    role: denominator
+    definition: n/a
+    geography: [World]
+    years: "10000 BCE – 1990"
+    provider: datasets/population-global-historical (Deevey, McEvedy&Jones, Biraben, UN, Kremer)
+    url: https://raw.githubusercontent.com/datasets/population-global-historical/main/data/population.csv
+    method: github_raw
+    reachable: here
+    raw: world-historical-population.csv
+    metric: population
+    priority: 1
+    task: G-POP-01
+    status: fetched
+    notes: >-
+      Year,Average,Deevey,... values in MILLIONS. Use "Average" for World pre-1750
+      denominator (fills the pre-1820 world gap).
+
+  - id: california-population
+    name: US state population incl. California, annual
+    role: denominator
+    definition: n/a
+    geography: [California, United States]
+    years: "1900 – 2025 (CA)"
+    provider: JoshData/historical-state-population-csv (US Census state estimates)
+    url: https://raw.githubusercontent.com/JoshData/historical-state-population-csv/main/historical_state_population_by_year.csv
+    method: github_raw
+    reachable: here
+    raw: state-population.csv
+    metric: population
+    priority: 1
+    task: G-US-06
+    status: fetched
+    notes: >-
+      No header: state_abbr,year,population. Filter CA. Fills the California
+      denominator gap (1900+; pre-1900 CA still needs Census historical).
+
+  - id: barro-lee
+    name: Barro-Lee educational attainment (long-run)
+    role: covariate
+    definition: n/a
+    geography: [many]
+    years: "1870 – 2010 (5-yr)"
+    provider: Barro & Lee; barrolee/BarroLeeDataSet
+    url: https://raw.githubusercontent.com/barrolee/BarroLeeDataSet/master/OUP/OUP_long_MF1564_v1.csv
+    method: github_raw
+    reachable: here
+    raw: barro-lee-attainment.csv
+    metric: n/a
+    priority: 2
+    task: A-02
+    status: fetched
+    notes: >-
+      % tertiary attained/completed (lh/lhc), ~146 countries. Upper-tail
+      human-capital covariate feeding the pre-1900 modern-standard counterfactual.
+
   - id: maddison-2023
     name: Maddison Project Database 2023
     role: denominator
@@ -139,15 +216,19 @@ sources:
     geography: [United States, California]
     years: "1997 – present"
     provider: US Bureau of Labor Statistics
-    url: https://www.bls.gov/oes/tables.htm
-    method: http_api
-    reachable: blocked_egress
-    raw: bls-oews-eng.csv
+    url: https://raw.githubusercontent.com/openai/GPTs-are-GPTs/main/data/national_May2021_dl.csv
+    method: github_raw
+    reachable: here
+    raw: bls-oews-national-2021.csv
     metric: stock
     priority: 1
     task: G-US-02
-    status: blocked
-    notes: SOC 17-2xxx (engineers). National + state (CA) + metro. bls.gov blocked.
+    status: fetched
+    notes: >-
+      MIRROR of BLS OEWS national May-2021 (a data-science repo). SOC 17-2xxx;
+      "17-2000 Engineers" = 1,631,080 (2021). PARTIAL: single year, national only
+      — the full year-by-state series still needs bls.gov (blocked). This one
+      real point replaces the US 2022 modern seed anchor.
 
   - id: nces-ipeds
     name: IPEDS Completions — engineering degrees (CIP 14)

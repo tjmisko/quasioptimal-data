@@ -1,8 +1,7 @@
-description: "Long-run population (denominator) for World + target countries, 1500\u2013\
-  2018."
-source: Maddison Project Database 2020 (Bolt & van Zanden), via owid/owid-datasets
-  mirror
-rows: 1072
+description: Long-run population denominator, World + target countries + California.
+source: 'Layered GitHub mirrors: owid-co2 (OWID/HYDE/Gapminder/UN) + Maddison 2020
+  + world-historical + JoshData state population + World Bank. See sources.yaml.'
+rows: 1489
 columns:
 - entity
 - iso3
@@ -10,8 +9,7 @@ columns:
 - population
 - source_id
 - notes
-notes: Maddison population estimates. World total only from 1820 (use HYDE for earlier
-  world denominator, task G-POP-02). California not covered (task G-US-06). Pre-1820
-  country figures are sparse era estimates with wide uncertainty (e.g. US 1500/1700
-  reflect contested indigenous-population estimates).
-source_id: maddison-2020
+notes: Annual 1750-2024 (owid-co2); pre-1750 country benchmarks (Maddison) and World
+  totals (historical 'Average'); California 1900+ (US Census state estimates). Pre-1900
+  figures are era estimates with wide uncertainty; California pre-1900 still missing
+  (Census historical, task G-US-06).

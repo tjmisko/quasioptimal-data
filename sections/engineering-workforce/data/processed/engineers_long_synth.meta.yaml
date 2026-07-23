@@ -1,0 +1,16 @@
+description: SYNTHETIC dense engineer counts, both definitions, 1500-2025.
+source: SYNTHETIC generative model (pipeline/synthetic.py)
+rows: 7364
+columns:
+- entity
+- iso3
+- year
+- definition
+- metric
+- engineers
+- method
+- source_id
+- source_definition
+- confidence
+- notes
+notes: NOT REAL DATA. confidence=synthetic. Ground-truth breaks in breaks sidecar.

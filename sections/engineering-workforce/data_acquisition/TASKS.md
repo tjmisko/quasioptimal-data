@@ -35,14 +35,15 @@ Pipeline entry points these tasks feed:
 - **Do:** already fetched via `pipeline/fetch.py` from the OWID/datahub GitHub mirrors.
 - **Done when:** raw CSVs present + logged (they are); `population_long.parquet` builds.
 
-### G-POP-02 ⛔ — Pre-1820 world + newer/UK denominators  · owner: agent (needs egress) / human
-- **Sources:** `owid-hyde-population` (world pop pre-1820 + smoother series),
-  `maddison-2023` (newer than 2020), `boe-millennium` (UK 1086–2016).
-- **Do:** download OWID population long-run CSV; Maddison 2023 xlsx from rug.nl;
-  BoE "Millennium of Macroeconomic Data" xlsx.
-- **Acceptance:** world population back to ≥1500 in `population_long`; UK series
-  extended pre-1820. Update `prepare_population.py` to prefer 2023 over 2020.
-- **Blocked by:** egress 403 on ourworldindata.org, rug.nl, bankofengland.co.uk.
+### G-POP-02 ✅ — Pre-1820 world + newer/UK denominators  · **mostly done via GitHub mirrors**
+- **Done:** the GitHub-mirror hunt found reachable substitutes now wired into
+  `prepare_population.py`: `owid-co2-population` (annual World+country pop
+  1750-2024 + Maddison-2023 GDP), `world-historical-population` (World back to
+  10000 BCE). `population_long` now covers World from antiquity and countries
+  annually 1750+.
+- **Remaining ⛔:** full per-country Maddison 2023 xlsx and BoE "Millennium" are
+  not on GitHub as plain CSVs (a `datasets/economic-history` mirror of BoE exists
+  — see `mirrors-population.md` — wire it in if UK pre-1750 annual detail is needed).
 
 ### G-US-01 ⛔ — IPUMS USA census microdata (engineer stock, US + CA)  · owner: human · **priority 1**
 - **Source:** `ipums-usa`. **Needs a free IPUMS account + extract builder.**
@@ -57,11 +58,12 @@ Pipeline entry points these tasks feed:
 - **Acceptance:** `data/raw/ipums-usa-extract.csv.gz` + a codebook note listing
   the exact OCC1950 codes used per year; implement `prepare_ipums_usa()` (P-US-01).
 
-### G-US-02 ⛔ — BLS OEWS engineer employment (US + CA), 1997+  · owner: agent (needs egress)
-- **Source:** `bls-oews`. **Do:** pull OEWS national + state (CA) + metro for SOC
-  17-2xxx (all detailed engineer codes) for each available year.
-- **Acceptance:** tidy `data/raw/bls-oews-eng.csv` (year, area, soc, employment);
-  implement `prepare_bls_oews()` (P-US-02).
+### G-US-02 ◑ — BLS OEWS engineer employment (US + CA), 1997+  · **partial via mirror**
+- **Done:** one real point — a GitHub mirror of BLS OEWS national **May-2021**
+  gives US SOC 17-2000 "Engineers" = 1,631,080 (2021), fetched, transformed by
+  `prepare_bls_oews()` with `confidence='primary'`.
+- **Remaining ⛔:** the full year-by-state (incl. California) OEWS series needs
+  bls.gov (blocked). Extend `prepare_bls_oews()` to loop years/areas when obtained.
 
 ### G-US-03 ⛔ — US engineering degrees (IPEDS CIP 14 + NSF NCSES)  · owner: human/agent
 - **Sources:** `nces-ipeds`, `nsf-ncses`. Degrees conferred = **annual_flow**.
@@ -78,11 +80,12 @@ Pipeline entry points these tasks feed:
 ### G-US-05 ⛔ — PE licensure (NCEES + CA BPELSG)  · owner: human · priority 3
 - **Source:** `ncees-pe`. Narrow contemporary definition (many engineers unlicensed).
 
-### G-US-06 ⛔ — California population denominator  · owner: agent (needs egress) / human · **priority 1**
-- **Gap:** Maddison/WB have no California. **Do:** pull CA population time series
-  (US Census historical + CA Dept. of Finance E-series; colonial/1850+ from
-  Census historical statistics). **Acceptance:** add California rows to
-  `population_long` (extend `prepare_population.py`) so CA shares can be computed.
+### G-US-06 ✅ — California population denominator  · **done 1900+ via GitHub mirror**
+- **Done:** `california-population` (JoshData/historical-state-population-csv, US
+  Census state estimates) is fetched and wired into `prepare_population.py`;
+  California now has population 1900-2025 and CA shares can be computed.
+- **Remaining ⛔:** California **pre-1900** (1850-1899) still needs Census
+  historical statistics (Gold-Rush-era) — a smaller gap.
 
 ### G-INT-01 ⛔ — Global graduates & occupation stock (UNESCO, ILO, OECD)  · owner: agent (needs egress) · **priority 1**
 - **Sources:** `unesco-uis` (ISCED-F 07 graduate flow), `ilostat` (ISCO-08 214

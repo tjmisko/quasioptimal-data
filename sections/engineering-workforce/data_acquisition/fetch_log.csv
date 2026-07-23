@@ -1,3 +1,10 @@
 source_id,url,raw_file,bytes,result
 maddison-2020,https://raw.githubusercontent.com/owid/owid-datasets/master/datasets/Maddison%20Project%20Database%202020%20(Bolt%20and%20van%20Zanden%20(2020))/Maddison%20Project%20Database%202020%20(Bolt%20and%20van%20Zanden%20(2020)).csv,maddison-2020.csv,809942,ok 809942 bytes sha256=23a67c11f701
 worldbank-population,https://raw.githubusercontent.com/datasets/population/main/data/population.csv,worldbank-population.csv,552112,ok 552112 bytes sha256=7d2dd6a17f5e
+maddison-2020,https://raw.githubusercontent.com/owid/owid-datasets/master/datasets/Maddison%20Project%20Database%202020%20(Bolt%20and%20van%20Zanden%20(2020))/Maddison%20Project%20Database%202020%20(Bolt%20and%20van%20Zanden%20(2020)).csv,maddison-2020.csv,809942,ok 809942 bytes sha256=23a67c11f701
+worldbank-population,https://raw.githubusercontent.com/datasets/population/main/data/population.csv,worldbank-population.csv,552112,ok 552112 bytes sha256=7d2dd6a17f5e
+owid-co2-population,https://raw.githubusercontent.com/owid/co2-data/master/owid-co2-data.csv,owid-co2-data.csv,14377942,ok 14377942 bytes sha256=7f78e2b218ce
+world-historical-population,https://raw.githubusercontent.com/datasets/population-global-historical/main/data/population.csv,world-historical-population.csv,1855,ok 1855 bytes sha256=dfa039190f6c
+california-population,https://raw.githubusercontent.com/JoshData/historical-state-population-csv/main/historical_state_population_by_year.csv,state-population.csv,106356,ok 106356 bytes sha256=6047938c1c34
+barro-lee,https://raw.githubusercontent.com/barrolee/BarroLeeDataSet/master/OUP/OUP_long_MF1564_v1.csv,barro-lee-attainment.csv,302986,ok 302986 bytes sha256=bf9c5451b315
+bls-oews,https://raw.githubusercontent.com/openai/GPTs-are-GPTs/main/data/national_May2021_dl.csv,bls-oews-national-2021.csv,309133,ok 309133 bytes sha256=ed35ea6dda3c

@@ -1,0 +1,72 @@
+{
+  "World": {
+    "contemporary": [
+      1870,
+      1970
+    ],
+    "modern": [
+      1845,
+      1970
+    ]
+  },
+  "United States": {
+    "contemporary": [
+      1860,
+      1965
+    ],
+    "modern": [
+      1835,
+      1965
+    ]
+  },
+  "California": {
+    "contemporary": [
+      1885,
+      1975
+    ],
+    "modern": [
+      1860,
+      1975
+    ]
+  },
+  "China": {
+    "contemporary": [
+      1955,
+      1999
+    ],
+    "modern": [
+      1930,
+      1999
+    ]
+  },
+  "United Kingdom": {
+    "contemporary": [
+      1800,
+      1960
+    ],
+    "modern": [
+      1775,
+      1960
+    ]
+  },
+  "Germany": {
+    "contemporary": [
+      1845,
+      1960
+    ],
+    "modern": [
+      1820,
+      1960
+    ]
+  },
+  "France": {
+    "contemporary": [
+      1820,
+      1965
+    ],
+    "modern": [
+      1795,
+      1965
+    ]
+  }
+}

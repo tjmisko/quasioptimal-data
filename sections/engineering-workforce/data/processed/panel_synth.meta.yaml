@@ -1,0 +1,18 @@
+description: SYNTHETIC analysis panel (share_per_100k) for developing the stack.
+source: Join of SYNTHETIC engineers + population.
+rows: 7364
+columns:
+- entity
+- iso3
+- year
+- definition
+- engineers
+- population
+- share_per_100k
+- metric
+- method
+- source_id
+- confidence
+- notes
+notes: NOT REAL DATA. Use to build/validate analysis + report; swap in real panel
+  later.

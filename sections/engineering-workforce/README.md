@@ -57,10 +57,20 @@ empirical groundwork for claims about engineering capacity and development. See
 
 ## Status
 
-**Exploring.** Literature review and data search complete (see `research/`). The
-acquisition framework and a runnable pipeline are in place. The **population
-denominator is real** (Maddison 2020 + World Bank, the only egress-reachable
-data); **all numerator sources are currently egress-blocked** and captured as
-`G-*` tasks in `data_acquisition/TASKS.md`. The current panel is built from a
-small **provisional literature seed** — a methods demonstration and preliminary
-read, not a result. No claims formulated yet.
+**Exploring — analysis stack complete and swap-in ready.** Literature review and
+data search are done (`research/`); a GitHub-mirror hunt (`data_acquisition/
+mirrors-*.md`) closed the denominator gaps.
+
+- **Denominator is real and rich:** World from 10000 BCE, countries annually from
+  1750 (OWID/Maddison/World Bank mirrors), **California 1900+** — see
+  `data/processed/population_long.parquet`.
+- **Numerators:** one real point (US engineers 2021 from a BLS mirror) plus a
+  small **provisional literature seed**; the rest are egress-blocked `G-*` tasks.
+  So `panel.parquet` is still a preliminary read, not a result.
+- **Ready to go:** the full analysis + output stack runs now on **dense synthetic
+  data** and switches to real data by changing one path — `pipeline/synthetic.py`,
+  `pipeline/analysis.py` (changepoint / growth regimes / cross-country /
+  counterfactual), `pipeline/report.py` (figures + report), and the first claim
+  `claims/engineer-share-takeoff/` (formal test wired and validated).
+
+No claim verdicts recorded yet — those wait on real numerator data.
